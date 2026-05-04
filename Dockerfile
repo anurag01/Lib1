@@ -30,6 +30,9 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Copy application code
 COPY . .
 
+# Ensure startup script is executable
+RUN chmod +x /app/start.sh
+
 # Create uploads directory
 RUN mkdir -p /app/uploads/books
 
@@ -40,5 +43,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/docs', timeout=5)"
 
-# Run with Railway-assigned PORT (falls back to 8000 locally)
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Run migrations first, then start API server
+CMD ["/app/start.sh"]
